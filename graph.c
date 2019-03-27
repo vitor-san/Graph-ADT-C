@@ -223,6 +223,18 @@ elemV getVertexValue(Graph g, int x) {
   return g->list[x-1].data;
 }
 
+int getVertexDegree(Graph g, int x) {
+  if (g == NULL || g->list == NULL) return -1;  // error
+  if (x < 1 || x > g->numVt) return -1;  // error
+
+  int *vet = neighbors(g, x);
+  int i = 0;
+  while (vet[i] != 0) i++;
+
+  free(vet);
+  return i;
+}
+
 void setVertexValue(Graph g, int x, elemV val) {
   if (g == NULL || g->list == NULL) return;  // error
   if (x < 1 || x > g->numVt) return;  // error

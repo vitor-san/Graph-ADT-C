@@ -125,6 +125,17 @@ If any error occured, the function will return 0.
 elemV getVertexValue(Graph g, int x);
 
 /*
+  Returns the degree of the vertex x.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+  @Return:
+      int -> number of vertices linked with x.
+If any error occured, the function will return -1.
+*/
+int getVertexDegree(Graph g, int x);
+
+/*
   Sets the value associated with the vertex x to val.
   @Parameters:
       Graph g -> graph to be considered.
