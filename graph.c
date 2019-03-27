@@ -196,6 +196,16 @@ int removeVertex(Graph g, int x) {     // removes the vertex x, if it is there
   return 1;   // success
 }
 
+int getNumVertices(Graph g) {
+  if (g == NULL) return -1;  // error
+  return g->numVt;
+}
+
+int getNumEdges(Graph g) {
+  if (g == NULL) return -1;  // error
+  return g->numEd;
+}
+
 elemE getEdgeValue(Graph g, int x, int y) {
   if (g == NULL || g->list == NULL) return -1;  // error
   if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return -1;  // error

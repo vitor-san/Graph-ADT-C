@@ -92,6 +92,26 @@ int addVertex(Graph g, int x);
 int removeVertex(Graph g, int x);
 
 /*
+  Returns the number of vertices in the graph.
+  @Parameters:
+      Graph g -> graph to be considered.
+  @Return:
+      int -> number of vertices in graph g.
+If any error occured, the function will return -1.
+*/
+int getNumVertices(Graph g);
+
+/*
+  Returns the number of edges in the graph.
+  @Parameters:
+      Graph g -> graph to be considered.
+  @Return:
+      int -> number of edges in graph g.
+If any error occured, the function will return -1.
+*/
+int getNumEdges(Graph g);
+
+/*
   Returns the value associated with the edge (x, y).
   @Parameters:
       Graph g -> graph to be considered.
