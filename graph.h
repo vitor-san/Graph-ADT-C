@@ -1,3 +1,10 @@
+/*
+  A simple Graph abstract data type (ADT)
+  Author: Vitor Santana Cordeiro
+  ICMC, USP
+  São Carlos, Brazil
+*/
+
 #ifndef GRAPH_H
 #define GRAPH_H
 
@@ -7,26 +14,148 @@ typedef struct graph GRAPH;
 typedef GRAPH* Graph;
 
 /*
-  By default, in functions that returns an integer as error flag, 0 stands for error and 1 for success.
-  The same happens with functions that return pointers: NULL represents error.
+  Instantializes a new Graph.
+  @Parameters:
+      int n -> the number of vertices the graph should be inicialized with.
+      int d -> tells the function if you are creating a Digraph (in which case you must pass 1 as it's value), or not (in which case you pass 0). If d is a number diferent from 0 or 1, the function assumes that you're trying to create a Digraph.
+  @Return:
+      Graph -> a pointer to the newly created Graph.
+If any error ocurred, the function will return NULL.
 */
-
-Graph newGraph(int n, int d); // returns a new instantialized graph. n = number of vertices to be created, d = is digraph (1), or not (0).
-int adjacent(Graph g, int x, int y);  // tests whether there is an edge from the vertex x to the vertex y.  Returned int is like a boolean. If -1 is returned, then an error occured.
-int addEdge(Graph g, int x, int y);  // adds an edge from vertex x to vertex y.
-int removeEdge(Graph g, int x, int y); // removes the edge from vertex x to vertex y.
-int addVertex(Graph g, int x);  // adds the vertex x, if it is not there.
-int removeVertex(Graph g, int x);  // removes the vertex x, if it is there.
-void printGraph(Graph g, int verbose); // if an error occurs, the function doesn't print anything.
-void deleteGraph(Graph g); // tries to destroy graph g
+Graph newGraph(int n, int d);
 
 /*
-  TODO:
-    neighbors(G, x): lists all vertices y such that there is an edge from the vertex x to the vertex y;
-    get_edge_value(G, x, y): returns the value associated with the edge (x, y);
-    set_edge_value(G, x, y, v): sets the value associated with the edge (x, y) to v.
-    get_vertex_value(G, x): returns the value associated with the vertex x;
-    set_vertex_value(G, x, v): sets the value associated with the vertex x to v.
+  Tests whether there is an edge from vertex x to vertex y.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+      int y -> vertex y.
+  @Return:
+      int -> a boolean-like return value: if they are adjacent, returns 1; if not, returns 0.
+If any error ocurred, the function will return -1.
 */
+int adjacent(Graph g, int x, int y);
+
+/*
+  Adds an edge from vertex x to vertex y.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+      int y -> vertex y.
+  @Return:
+      int -> 0 for failure, 1 for success.
+*/
+int addEdge(Graph g, int x, int y);
+
+/*
+  Removes the edge from vertex x to vertex y.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+      int y -> vertex y.
+  @Return:
+      int -> 0 for failure, 1 for success.
+*/
+int removeEdge(Graph g, int x, int y);
+
+/*
+  Lists all vertices y such that there is an edge from the vertex x to the vertex y.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+  @Return:
+      (int *) -> an array of integers, containing all vertex that are connected to x.
+If any error ocurred, the function will return NULL.
+
+>> REMEMBER TO FREE THE ARRAY RETURNED BY THIS FUNCTION! Otherwise, you may experience memory leak. <<
+*/
+int *neighbors(Graph g, int x);
+
+/*
+  Adds the vertex x, if it is not there.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex to be added.
+  @Return:
+      int -> 0 for failure, 1 for success.
+*/
+int addVertex(Graph g, int x);
+
+/*
+  Removes the vertex x, if it is there.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex to be removed.
+  @Return:
+      int -> 0 for failure, 1 for success.
+*/
+int removeVertex(Graph g, int x);
+
+/*
+  Returns the value associated with the edge (x, y).
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+      int y -> vertex y.
+  @Return:
+      elemE -> weight/cost/lenght of the edge (x, y).
+If any error occured, the function will return -1.
+*/
+elemE getEdgeValue(Graph g, int x, int y);
+
+/*
+  Sets the value associated with the edge (x, y) to val.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+      int y -> vertex y.
+      elemE val -> new edge (x, y) weight/cost/lenght.
+*/
+void setEdgeValue(Graph g, int x, int y, elemE val);
+
+/*
+  Returns the value associated with the vertex x.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+  @Return:
+      elemV -> data stored on the vertex x.
+If any error occured, the function will return 0.
+*/
+elemV getVertexValue(Graph g, int x);
+
+/*
+  Sets the value associated with the vertex x to val.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+      elemV val -> new vertex value.
+*/
+void setVertexValue(Graph g, int x, elemV val);
+
+/*
+  Prints the graph.
+  @Parameters:
+      Graph g -> graph to be printed.
+      int verbose -> tells the function if you want a more verbose showing of the graph or not. Any value different from 0 will make the function print the graph with more details.
+If any error occured, the function does not print anything.
+*/
+void printGraph(Graph g, int verbose);
+
+/*
+  Prints all vertices y such that there is an edge from the vertex x to the vertex y.
+  @Parameters:
+      Graph g -> graph to be considered.
+      int x -> vertex x.
+If any error occured, the function does not print anything.
+*/
+void printNeighbors(Graph g, int x);
+
+/*
+  Deletes graph from memory, avoiding memory leak.
+  @Parameters:
+      Graph g -> graph to be deleted.
+*/
+void deleteGraph(Graph g);
 
 #endif

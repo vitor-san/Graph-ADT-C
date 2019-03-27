@@ -11,6 +11,7 @@ typedef struct edgeNode {
 typedef struct vertexNode {
   EdgeNode *beg, *end;
   elemV data;
+  int numConnec;
 } VertexNode;
 
 struct graph {
@@ -33,6 +34,7 @@ Graph newGraph(int n, int d) {
     g->list[i].beg = NULL;
     g->list[i].end = NULL;
     g->list[i].data = 0;
+    g->list[i].numConnec = 0;
   }
 
   g->numVt = n;
@@ -77,10 +79,14 @@ int addEdge(Graph g, int x, int y) {
     g->list[x-1].end = n;
   }
 
-  if (!g->isDigraph && !adjacent(g, y, x)) addEdge(g, y, x);
+  int scndRtrn = 0;   // second return (in case it's a digraph)
+  if (!g->isDigraph && !adjacent(g, y, x)) scndRtrn = addEdge(g, y, x);
+
+  g->list[x-1].numConnec++;
   g->numEd++;
 
-  return 1;
+  if (!g->isDigraph) return scndRtrn;
+  else return 1;
 }
 
 // removes x -> y
@@ -121,9 +127,30 @@ int removeEdge(Graph g, int x, int y) {
   else return 0;  // there's no edge from x to y
 
   if (!g->isDigraph && adjacent(g, y, x)) removeEdge(g, y, x);
+
+  g->list[x-1].numConnec--;
   g->numEd--;
 
   return 1;
+}
+
+/* REMEMBER TO FREE() THE ARRAY RETURNED BY THIS FUNCTION!!! */
+int *neighbors(Graph g, int x) {
+  if (g == NULL || g->list == NULL) return NULL;
+  if (x < 1 || x > g->numVt) return NULL;
+
+  int connections = g->list[x-1].numConnec;
+  int *neigh = malloc((connections+1)*sizeof(int));   // allocates space for all the neighbors + a '0' that indicates the end of the list
+  if (neigh == NULL) return NULL;
+
+  EdgeNode *aux = g->list[x-1].beg;
+  for (int i = 0; i < connections; i++) {
+    neigh[i] = aux->vertex;
+    aux = aux->next;
+  }
+  neigh[connections] = 0;   // terminator
+
+  return neigh;
 }
 
 int addVertex(Graph g, int x) {     // adds the vertex x, if it is not there
@@ -141,8 +168,66 @@ int addVertex(Graph g, int x) {     // adds the vertex x, if it is not there
   }
   else {
     if (g->list[x-1].beg != NULL || g->list[x-1].data != 0) return 0;
-    else return 1;
+    else {
+      g->numVt++;   // I don't know if this is needed, yet
+      return 1;
+    }
   }
+}
+
+int removeVertex(Graph g, int x) {     // removes the vertex x, if it is there
+  if (g == NULL || g->list == NULL) return 0;
+  if (x < 1 || x > g->numVt) return 0;  // you shall remove a vertex that already exists
+
+  // first, I will remove all edges that ends on x
+  for (int i = 0; i < g->numVt; i++) {
+    if (adjacent(g, i+1, x)) removeEdge(g, i+1, x);
+  }
+  // now, I will remove all edges that starts on x (if g is a digraph; otherwise, they are already removed)
+  if (g->isDigraph) {
+    int *neigh = neighbors(g, x);
+    int i = 0;
+    while (neigh[i] != 0) removeEdge(g, x, neigh[i++]);
+    free(neigh);
+  }
+  // erases the data in vertex x
+  g->list[x-1].data = 0;
+
+  return 1;   // success
+}
+
+elemE getEdgeValue(Graph g, int x, int y) {
+  if (g == NULL || g->list == NULL) return -1;  // error
+  if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return -1;  // error
+
+  EdgeNode *aux = g->list[x-1].beg;
+  while (aux != NULL && aux->vertex != y) aux = aux->next;
+  if (aux == NULL) return -1;   // error: there is no edge from x to y
+  else return aux->weight;
+}
+
+void setEdgeValue(Graph g, int x, int y, elemE val) {
+  if (g == NULL || g->list == NULL) return;  // error
+  if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return;  // error
+
+  EdgeNode *aux = g->list[x-1].beg;
+  while (aux != NULL && aux->vertex != y) aux = aux->next;
+  if (aux == NULL) return;   // error: there is no edge from x to y
+  else aux->weight = val;
+}
+
+elemV getVertexValue(Graph g, int x) {
+  if (g == NULL || g->list == NULL) return 0;  // error
+  if (x < 1 || x > g->numVt) return 0;  // error
+
+  return g->list[x-1].data;
+}
+
+void setVertexValue(Graph g, int x, elemV val) {
+  if (g == NULL || g->list == NULL) return;  // error
+  if (x < 1 || x > g->numVt) return;  // error
+
+  g->list[x-1].data = val;
 }
 
 void printGraph(Graph g, int verbose) {
@@ -169,6 +254,16 @@ void printGraph(Graph g, int verbose) {
   }
 }
 
+void printNeighbors(Graph g, int x) {
+  int *vet = neighbors(g, x), i = 0;
+
+  printf("Neighbors of %d: ", x);
+  while (vet[i] != 0) printf("%d ", vet[i++]);
+  printf("\n");
+
+  free(vet);
+}
+
 void deleteGraph(Graph g) {
   if (g == NULL) return;
 
@@ -184,8 +279,6 @@ void deleteGraph(Graph g) {
           aux = g->list[i].beg;
         }
         free(aux);
-        //g->list[i].beg = NULL;
-        //g->list[i].end = NULL;
       }
     }
     free(g->list);
