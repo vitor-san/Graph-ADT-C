@@ -32,7 +32,7 @@ Graph newGraph(int n, int d);
       int y -> vertex y.
   @Return:
       int -> a boolean-like return value: if they are adjacent, returns 1; if not, returns 0.
-If any error ocurred, the function will return -1.
+If any error ocurred, the function will return 0 aswell.
 */
 int adjacent(Graph g, int x, int y);
 

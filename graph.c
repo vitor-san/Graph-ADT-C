@@ -46,11 +46,11 @@ Graph newGraph(int n, int d) {
 }
 
 int adjacent(Graph g, int x, int y) {
-  if (g == NULL || g->list == NULL) return -1;  // error
-  if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return -1; // error
+  if (g == NULL || g->list == NULL) return 0;  // error
+  if (x < 0 || x >= g->numVt || y < 0 || y >= g->numVt) return 0; // error
 
-  if (g->list[x-1].beg != NULL) {
-    EdgeNode *aux = g->list[x-1].beg;
+  if (g->list[x].beg != NULL) {
+    EdgeNode *aux = g->list[x].beg;
     while (aux != NULL) {
       if (aux->vertex == y) return 1;
       aux = aux->next;
@@ -62,7 +62,7 @@ int adjacent(Graph g, int x, int y) {
 // creates x -> y
 int addEdge(Graph g, int x, int y) {
   if (g == NULL || g->list == NULL) return 0;
-  if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return 0;
+  if (x < 0 || x >= g->numVt || y < 0 || y >= g->numVt) return 0;
   if (adjacent(g, x, y)) return 0;
 
   EdgeNode *n = malloc(sizeof(EdgeNode)); // new edge
@@ -71,18 +71,18 @@ int addEdge(Graph g, int x, int y) {
   n->vertex = y;
   n->weight = 1;
 
-  if (g->list[x-1].beg == NULL) {
-    g->list[x-1].beg = n;
-    g->list[x-1].end = n;
+  if (g->list[x].beg == NULL) {
+    g->list[x].beg = n;
+    g->list[x].end = n;
   } else {
-    g->list[x-1].end->next = n;
-    g->list[x-1].end = n;
+    g->list[x].end->next = n;
+    g->list[x].end = n;
   }
 
   int scndRtrn = 0;   // second return (in case it's a digraph)
   if (!g->isDigraph && !adjacent(g, y, x)) scndRtrn = addEdge(g, y, x);
 
-  g->list[x-1].numConnec++;
+  g->list[x].numConnec++;
   g->numEd++;
 
   if (!g->isDigraph) return scndRtrn;
@@ -92,11 +92,11 @@ int addEdge(Graph g, int x, int y) {
 // removes x -> y
 int removeEdge(Graph g, int x, int y) {
   if (g == NULL || g->list == NULL) return 0;
-  if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return 0;
+  if (x < 0 || x >= g->numVt || y < 0 || y >= g->numVt) return 0;
 
-  if (g->list[x-1].beg != NULL) {
+  if (g->list[x].beg != NULL) {
     // tries to find y node
-    EdgeNode *cur = g->list[x-1].beg;
+    EdgeNode *cur = g->list[x].beg;
     EdgeNode *prev = NULL;
 
     while (cur != NULL && cur->vertex != y) {
@@ -107,14 +107,14 @@ int removeEdge(Graph g, int x, int y) {
     if (cur == NULL) return 0;  // there's no edge from x to y
     else {  // the edge exists!
       if (prev == NULL) {   // cur points to the beginning of the list
-        g->list[x-1].beg = cur->next;  // updates value of begin
-        if (cur->next == NULL) g->list[x-1].end = NULL;  // updates value of end
+        g->list[x].beg = cur->next;  // updates value of begin
+        if (cur->next == NULL) g->list[x].end = NULL;  // updates value of end
         free(cur);  // deletes node
       }
       else {   // cur is not on the beginning of the list
-        if (cur == g->list[x-1].end) {  // y is in the last node of the list
+        if (cur == g->list[x].end) {  // y is in the last node of the list
           prev->next = NULL;  // cuts reference to cur
-          g->list[x-1].end = prev;  // updates value of end
+          g->list[x].end = prev;  // updates value of end
           free(cur);  // deletes node
         }
         else {  // y is in the "middle" of the list
@@ -128,7 +128,7 @@ int removeEdge(Graph g, int x, int y) {
 
   if (!g->isDigraph && adjacent(g, y, x)) removeEdge(g, y, x);
 
-  g->list[x-1].numConnec--;
+  g->list[x].numConnec--;
   g->numEd--;
 
   return 1;
@@ -137,13 +137,13 @@ int removeEdge(Graph g, int x, int y) {
 /* REMEMBER TO FREE() THE ARRAY RETURNED BY THIS FUNCTION!!! */
 int *neighbors(Graph g, int x) {
   if (g == NULL || g->list == NULL) return NULL;
-  if (x < 1 || x > g->numVt) return NULL;
+  if (x < 0 || x >= g->numVt) return NULL;
 
-  int connections = g->list[x-1].numConnec;
+  int connections = g->list[x].numConnec;
   int *neigh = malloc((connections+1)*sizeof(int));   // allocates space for all the neighbors + a '0' that indicates the end of the list
   if (neigh == NULL) return NULL;
 
-  EdgeNode *aux = g->list[x-1].beg;
+  EdgeNode *aux = g->list[x].beg;
   for (int i = 0; i < connections; i++) {
     neigh[i] = aux->vertex;
     aux = aux->next;
@@ -155,19 +155,19 @@ int *neighbors(Graph g, int x) {
 
 int addVertex(Graph g, int x) {     // adds the vertex x, if it is not there
   if (g == NULL || g->list == NULL) return 0;
-  if (x < 1) return 0;  // number of vertex shall be at least one
+  if (x < 0) return 0;  // number of vertex shall be at least zero
 
   if (x > g->numVt) {
     g->list = realloc(g->list, 2*(g->numVt)*sizeof(VertexNode));
     if (g->list == NULL) return -1;   // super error: you lost the graph you had previously (probably will never happen)
-    g->list[x-1].data = 0;
-    g->list[x-1].beg = NULL;
-    g->list[x-1].end = NULL;
+    g->list[x].data = 0;
+    g->list[x].beg = NULL;
+    g->list[x].end = NULL;
     g->numVt++;
     return 1;   // success
   }
   else {
-    if (g->list[x-1].beg != NULL || g->list[x-1].data != 0) return 0;
+    if (g->list[x].beg != NULL || g->list[x].data != 0) return 0;
     else {
       g->numVt++;   // I don't know if this is needed, yet
       return 1;
@@ -177,11 +177,11 @@ int addVertex(Graph g, int x) {     // adds the vertex x, if it is not there
 
 int removeVertex(Graph g, int x) {     // removes the vertex x, if it is there
   if (g == NULL || g->list == NULL) return 0;
-  if (x < 1 || x > g->numVt) return 0;  // you shall remove a vertex that already exists
+  if (x < 0 || x >= g->numVt) return 0;  // you shall remove a vertex that already exists
 
   // first, I will remove all edges that ends on x
   for (int i = 0; i < g->numVt; i++) {
-    if (adjacent(g, i+1, x)) removeEdge(g, i+1, x);
+    if (adjacent(g, i, x)) removeEdge(g, i, x);
   }
   // now, I will remove all edges that starts on x (if g is a digraph; otherwise, they are already removed)
   if (g->isDigraph) {
@@ -191,7 +191,7 @@ int removeVertex(Graph g, int x) {     // removes the vertex x, if it is there
     free(neigh);
   }
   // erases the data in vertex x
-  g->list[x-1].data = 0;
+  g->list[x].data = 0;
 
   return 1;   // success
 }
@@ -208,9 +208,9 @@ int getNumEdges(Graph g) {
 
 elemE getEdgeValue(Graph g, int x, int y) {
   if (g == NULL || g->list == NULL) return -1;  // error
-  if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return -1;  // error
+  if (x < 0 || x >= g->numVt || y < 0 || y >= g->numVt) return -1;  // error
 
-  EdgeNode *aux = g->list[x-1].beg;
+  EdgeNode *aux = g->list[x].beg;
   while (aux != NULL && aux->vertex != y) aux = aux->next;
   if (aux == NULL) return -1;   // error: there is no edge from x to y
   else return aux->weight;
@@ -218,9 +218,9 @@ elemE getEdgeValue(Graph g, int x, int y) {
 
 void setEdgeValue(Graph g, int x, int y, elemE val) {
   if (g == NULL || g->list == NULL) return;  // error
-  if (x < 1 || x > g->numVt || y < 1 || y > g->numVt) return;  // error
+  if (x < 0 || x >= g->numVt || y < 0 || y >= g->numVt) return;  // error
 
-  EdgeNode *aux = g->list[x-1].beg;
+  EdgeNode *aux = g->list[x].beg;
   while (aux != NULL && aux->vertex != y) aux = aux->next;
   if (aux == NULL) return;   // error: there is no edge from x to y
   else aux->weight = val;
@@ -228,23 +228,23 @@ void setEdgeValue(Graph g, int x, int y, elemE val) {
 
 elemV getVertexValue(Graph g, int x) {
   if (g == NULL || g->list == NULL) return 0;  // error
-  if (x < 1 || x > g->numVt) return 0;  // error
+  if (x < 0 || x >= g->numVt) return 0;  // error
 
-  return g->list[x-1].data;
+  return g->list[x].data;
 }
 
 int getVertexDegree(Graph g, int x) {
   if (g == NULL || g->list == NULL) return -1;  // error
-  if (x < 1 || x > g->numVt) return -1;  // error
+  if (x < 0 || x >= g->numVt) return -1;  // error
 
-  return g->list[x-1].numConnec;
+  return g->list[x].numConnec;
 }
 
 void setVertexValue(Graph g, int x, elemV val) {
   if (g == NULL || g->list == NULL) return;  // error
-  if (x < 1 || x > g->numVt) return;  // error
+  if (x < 0 || x >= g->numVt) return;  // error
 
-  g->list[x-1].data = val;
+  g->list[x].data = val;
 }
 
 void printGraph(Graph g, int verbose) {
@@ -254,8 +254,8 @@ void printGraph(Graph g, int verbose) {
   for (int i = 0; i < g->numVt; i++) {
     if (g->list[i].beg != NULL) {
       aux = g->list[i].beg;
-      if (verbose) printf("Vertex %d (%c) -> ", i+1, g->list[i].data);
-      else printf("%d -> ", i+1);
+      if (verbose) printf("Vertex %d (%c) -> ", i, g->list[i].data);
+      else printf("%d -> ", i);
       while (aux->next != NULL) {
         if (verbose) printf("(%d, %.2lf), ", aux->vertex, aux->weight);
         else printf("%d, ", aux->vertex);
@@ -265,7 +265,7 @@ void printGraph(Graph g, int verbose) {
       else printf("%d\n", aux->vertex);
     }
     else {
-      if (verbose) printf("Vertex %d (%c) -> NONE\n", i+1, g->list[i].data);
+      if (verbose) printf("Vertex %d (%c) -> NONE\n", i, g->list[i].data);
       else printf("%d -> NONE\n", i+1);
     }
   }
